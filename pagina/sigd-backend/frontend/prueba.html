@@ -1,0 +1,265 @@
+const API_URL = 'http://localhost:5000/api';
+let token = '';
+
+// Secciones
+const loginSection = document.getElementById('loginSection');
+const mainSection = document.getElementById('mainSection');
+const documentsTable = document.getElementById('documentsTable');
+const fileForm = document.getElementById('fileForm');
+const manualForm = document.getElementById('manualForm');
+const uploadDropdown = document.getElementById('uploadDropdown');
+
+// Mostrar u ocultar menú desplegable de "Cargar Documento"
+document.getElementById('uploadBtn').addEventListener('click', () => {
+  uploadDropdown.style.display = uploadDropdown.style.display === 'block' ? 'none' : 'block';
+});
+
+// Abrir formulario de subir archivo
+function openUploadForm() {
+  fileForm.style.display = 'block';
+  manualForm.style.display = 'none';
+  uploadDropdown.style.display = 'none';
+  documentsTable.style.display = 'none';
+}
+
+// Abrir formulario manual
+function openManualForm() {
+  manualForm.style.display = 'block';
+  fileForm.style.display = 'none';
+  uploadDropdown.style.display = 'none';
+  documentsTable.style.display = 'none';
+}
+
+// LOGIN
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+
+  if (data.token) {
+    token = data.token;
+    loginSection.style.display = 'none';
+    mainSection.style.display = 'flex';
+  } else {
+    alert('Error en login: ' + data.message);
+  }
+});
+
+// SUBIR ARCHIVO
+fileForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const title = document.getElementById('titleFile').value;
+  const file = document.getElementById('fileUpload').files[0];
+
+  const formData = new FormData();
+  formData.append('title', title);
+  formData.append('description', ''); // vacía por ahora
+  formData.append('file', file);
+
+  const res = await fetch(`${API_URL}/documents`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+    body: formData
+  });
+
+  if (res.ok) {
+    alert('Archivo subido');
+    fileForm.reset();
+    fileForm.style.display = 'none';
+    loadDocuments();
+  } else {
+    alert('Error al subir archivo');
+  }
+});
+
+// CREAR DOCUMENTO MANUAL
+manualForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const title = document.getElementById('titleManual').value;
+  const description = document.getElementById('descriptionManual').value;
+
+  const res = await fetch(`${API_URL}/documents`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ title, description })
+  });
+
+  if (res.ok) {
+    alert('Documento creado');
+    manualForm.reset();
+    manualForm.style.display = 'none';
+    loadDocuments();
+  } else {
+    alert('Error al crear documento');
+  }
+});
+
+// CARGAR Y MOSTRAR DOCUMENTOS
+async function loadDocuments() {
+  const res = await fetch(`${API_URL}/documents`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  const documents = await res.json();
+  const tbody = documentsTable.querySelector('tbody');
+  tbody.innerHTML = '';
+  documentsTable.style.display = 'table';
+  fileForm.style.display = 'none';
+  manualForm.style.display = 'none';
+
+  documents.forEach(doc => {
+    const row = document.createElement('tr');
+
+    const name = document.createElement('td');
+    name.textContent = doc.title;
+    name.style.color = 'blue';
+    name.style.cursor = 'pointer';
+    name.onclick = () => {
+      if (doc.file) {
+        window.open(`http://localhost:5000/uploads/${doc.file}`, '_blank');
+      } else {
+        alert('Descripción:\n' + doc.description);
+      }
+    };
+
+    const date = document.createElement('td');
+    const fecha = new Date(doc.createdAt);
+    date.textContent = fecha.toLocaleDateString('es-CO');
+
+    const status = document.createElement('td');
+    status.textContent = doc.status;
+
+    const options = document.createElement('td');
+    options.classList.add('options');
+    options.innerHTML = '⋮';
+
+    const dropdown = document.createElement('div');
+    dropdown.classList.add('dropdown');
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Eliminar';
+    deleteBtn.onclick = () => deleteDocument(doc._id);
+
+    dropdown.appendChild(deleteBtn);
+    options.appendChild(dropdown);
+
+    options.onclick = () => {
+      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+    };
+
+    row.appendChild(name);
+    row.appendChild(date);
+    row.appendChild(status);
+    row.appendChild(options);
+    tbody.appendChild(row);
+  });
+}
+
+// ELIMINAR DOCUMENTO
+async function deleteDocument(id) {
+  const confirmDelete = confirm('¿Eliminar este documento?');
+  if (!confirmDelete) return;
+
+  const res = await fetch(`${API_URL}/documents/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  if (res.ok) {
+    alert('Documento eliminado');
+    loadDocuments();
+  } else {
+    alert('Error al eliminar');
+  }
+}
+
+async function loadReviewSection() {
+  // Ocultar otras secciones
+  fileForm.style.display = 'none';
+  manualForm.style.display = 'none';
+  documentsTable.style.display = 'none';
+
+  // Mostrar sección de revisión
+  document.getElementById('reviewTitle').style.display = 'block';
+  document.getElementById('reviewTable').style.display = 'table';
+
+  const res = await fetch(`${API_URL}/documents?status=Pendiente`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  const documents = await res.json();
+  const tbody = document.querySelector('#reviewTable tbody');
+  tbody.innerHTML = '';
+
+  documents.forEach(doc => {
+    const row = document.createElement('tr');
+
+    const name = document.createElement('td');
+    name.textContent = doc.title;
+
+    const date = document.createElement('td');
+    const fecha = new Date(doc.createdAt);
+    date.textContent = fecha.toLocaleDateString('es-CO');
+
+    const description = document.createElement('td');
+    description.textContent = doc.description || '[archivo adjunto]';
+
+    const actions = document.createElement('td');
+    const approveBtn = document.createElement('button');
+    approveBtn.textContent = '✅ Aprobar';
+    approveBtn.onclick = () => updateStatus(doc._id, 'Aprobado');
+
+    const rejectBtn = document.createElement('button');
+    rejectBtn.textContent = '❌ Rechazar';
+    rejectBtn.onclick = () => updateStatus(doc._id, 'Rechazado');
+
+    actions.appendChild(approveBtn);
+    actions.appendChild(rejectBtn);
+
+    row.appendChild(name);
+    row.appendChild(date);
+    row.appendChild(description);
+    row.appendChild(actions);
+    tbody.appendChild(row);
+  });
+}
+
+// Actualizar estado del documento
+async function updateStatus(id, newStatus) {
+  const res = await fetch(`${API_URL}/documents/${newStatus.toLowerCase()}/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  if (res.ok) {
+    alert(`Documento ${newStatus.toLowerCase()} correctamente`);
+    loadReviewSection();
+  } else {
+    alert('Error al actualizar estado');
+  }
+}

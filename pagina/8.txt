@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SIGD</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      background-color: #f8f9fa;
+    }
+  
+    #sidebar {
+      width: 240px;
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      height: 100vh;
+      border-right: 1px solid #ccc;
+    }
+  
+    #sidebar h3 {
+      margin-top: 20px;
+      margin-bottom: 15px;
+      font-size: 18px;
+      border-bottom: 1px solid #fff2;
+      padding-bottom: 5px;
+    }
+  
+    #sidebar button {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 12px;
+      border: none;
+      background: #34495e;
+      color: white;
+      border-radius: 6px;
+      font-weight: bold;
+      transition: background 0.3s ease;
+      cursor: pointer;
+    }
+  
+    #sidebar button:hover {
+      background: #1abc9c;
+    }
+  
+    #uploadDropdown {
+      display: none;
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      z-index: 2;
+      width: 100%;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  
+    #uploadDropdown button {
+      background: white;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+  
+    #uploadDropdown button:hover {
+      background: #f0f0f0;
+    }
+  
+    #main {
+      flex: 1;
+      padding: 30px;
+      background: #fff;
+    }
+  
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+  
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+  
+    th {
+      background: #f2f2f2;
+    }
+  
+    .options {
+      cursor: pointer;
+      position: relative;
+    }
+  
+    .dropdown {
+      display: none;
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      right: 0;
+      top: 20px;
+      z-index: 1;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+  
+    .dropdown button {
+      display: block;
+      width: 100%;
+      padding: 8px;
+      border: none;
+      background: white;
+      text-align: left;
+      cursor: pointer;
+    }
+  
+    .dropdown button:hover {
+      background: #f0f0f0;
+    }
+  
+    /* Botón cerrar sesión */
+    #main button {
+      border-radius: 5px;
+      transition: background 0.2s ease;
+    }
+  
+    /* Inputs generales */
+    input[type="text"], input[type="file"] {
+      padding: 10px;
+      width: 100%;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+  
+    /* Botones formularios */
+    form button {
+      background: #2c3e50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+  
+    form button:hover {
+      background: #1abc9c;
+    }
+    #uploadDropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background-color: #2c3e50; /* Fondo oscuro profesional */
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 5px 0;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      display: none; /* Este se controla desde JavaScript */
+    }
+
+    #uploadDropdown button {
+      display: block;
+      width: 100%;
+      padding: 10px 15px;
+      background: none;
+      color: #fff; /* Texto blanco */
+      border: none;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    #uploadDropdown button:hover {
+      background-color: #34495e; /* Hover más claro */
+    }
+
+  </style>
+  <!-- Quill Editor CDN -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="loginSection" style="width: 100%; height: 100vh; display: flex;  ">
+  <!-- COLUMNA IZQUIERDA -->
+  <div style="flex: 1; background: #a8adb5; display: flex; justify-content: center; align-items: center;">
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <img src="alcali.jpg" alt="Logo Alcaldía" style="max-width: 300px; margin-bottom: 20px;">
+      <img src="puco.png" alt="Logo Puro Corazón por Cali" style="max-width: 150px;">
+    </div>
+  </div>
+
+  
+    <!-- COLUMNA DERECHA -->
+    <div style="flex: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <img src="otrosig.jpg" alt="SIGD" style="width: 120px; margin-bottom: 30px;">
+      <form id="loginForm" style="width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 15px;">
+        <div style="position: relative;">
+          <input type="email" id="email" placeholder="Usuario" required style="width: 100%; padding: 10px 10px 10px 35px; border-radius: 5px; border: 1px solid #ccc;">
+          <span style="position: absolute; left: 10px; top: 10px;">👤</span>
+        </div>
+        <div style="position: relative;">
+          <input type="password" id="password" placeholder="Contraseña" required style="width: 100%; padding: 10px 10px 10px 35px; border-radius: 5px; border: 1px solid #ccc;">
+          <span style="position: absolute; left: 10px; top: 10px;">🔒</span>
+        </div>
+        <a href="#" style="font-size: 12px; text-align: center;">¿Olvidó su contraseña o usuario?</a>
+        <button type="submit" style="padding: 10px; background: #2c3e50; color: white; border: none; border-radius: 5px;">Iniciar Sesión</button>
+      </form>
+  
+      <div style="margin-top: 40px; display: flex; gap: 20px; font-size: 12px; text-align: center;">
+        <div style="max-width: 150px;">Funcionarios, proveedores y supervisores acceden al sistema con credenciales seguras</div>
+        <div style="max-width: 150px;">En caso de pérdida de contraseña o usuario, se realiza la recuperación o cambio a través de e-mail</div>
+      </div>
+    </div>
+  </div>
+  
+
+  <!-- APP PRINCIPAL -->
+  <div id="mainSection" style="display: none; width: 100%;">
+    <div id="sidebar">
+      <img src="sgiddos.jpg" width="200" height="200">
+      <h3>Menú</h3>
+      <div style="position: relative;">
+        <button id="uploadBtn">Cargar Documento</button>
+        <div id="uploadDropdown">
+          <button onclick="openUploadForm()">📄 Subir archivo PDF/Word</button>
+          <button onclick="openManualForm()">✏️ Crear manualmente</button>
+        </div>
+      </div>
+      <button onclick="loadDocuments()">Ver todos los documentos</button>
+      <button id="btnReview" onclick="loadReviewSection()">Revisión y Aprobación</button>
+      <button id="btnAudit" onclick="loadAudit()">Auditoría</button>
+      <button id="btnGenerarReporte">Generar Reporte PDF</button>
+      <button id="btnUserAdmin" style="display: none;">Administrar Usuarios</button>
+
+
+      <script>
+        document.getElementById('btnGenerarReporte').addEventListener('click', async () => {
+          try {
+            const token = localStorage.getItem('token'); // Asegúrate de guardar el token al iniciar sesión            
+      
+            const response = await fetch('http://localhost:5000/api/documents/reporte', {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+      
+            if (!response.ok) throw new Error('Error al generar reporte');
+      
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'reporte.pdf';
+            a.click();
+            window.URL.revokeObjectURL(url);
+          } catch (error) {
+            console.error('Error al descargar el PDF:', error);
+            alert('Hubo un problema al generar el reporte.');
+          }
+        });
+      </script>
+      
+
+
+    </div>
+
+    <div id="main">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <input type="text" id="searchInput" placeholder="Búsqueda avanzada en SIGD" style="width: 300px; padding: 5px;">
+        <button onclick="logout()" style="background: #e74c3c; color: white; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer;">
+          Cerrar sesión
+        </button>
+      </div>
+      
+      <h2>Te damos la bienvenida a SIGD</h2>
+      <!-- SECCIÓN ABOUT -->
+      <div id="aboutSection" style="margin-top: 40px;">
+        <p>SIGD (Sistema Integrado de Gestión Documental) es una plataforma diseñada para permitir a funcionarios, proveedores y supervisores:</p>
+        <ul>
+          <li>📤 Subir y gestionar documentos institucionales</li>
+          <li>✅ Aprobar o rechazar documentos según roles</li>
+          <li>📁 Almacenar archivos en un entorno seguro y centralizado</li>
+          <li>🔍 Buscar información relevante rápidamente</li>
+        </ul>
+        <p style="margin-top: 20px;">Seleccione una opción del menú lateral para comenzar.</p>
+      </div>
+     
+      <h2 id="auditTitle" style="display: none;">Registro de Auditoría</h2>
+      <table id="auditTable" style="display: none;">
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Creado por</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Revisado por</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="documentViewer" style="display: none; padding: 20px;">
+        <button onclick="closeViewer()" style="margin-bottom: 20px; background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 5px;">Cerrar</button>
+        
+        <h2 id="viewerTitle"></h2>
+      
+        <!-- Contenedor de lectura -->
+        <div id="viewerContent" style="background: white; padding: 20px; border: 1px solid #ccc; border-radius: 5px;"></div>
+      
+        <!-- Contenedor de edición (oculto al inicio) -->
+        <div id="editorView" style="display: none; margin-top: 20px;">
+          <div id="editorArea" style="height: 300px;"></div>
+          <button onclick="saveEditedDocument()" style="margin-top: 10px; background: #27ae60; color: white; border: none; padding: 10px; border-radius: 5px;">Guardar cambios</button>
+        </div>
+      
+        <!-- Botón para activar modo edición -->
+        <button id="editBtn" onclick="enableEditor()" style="margin-top: 20px; background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 5px;">Editar</button>
+      </div>
+      
+      
+      <!-- FORMULARIO SUBIR ARCHIVO -->
+      <form id="fileForm" enctype="multipart/form-data" style="display: none; margin-top: 20px;">
+        <input type="text" id="titleFile" placeholder="Título" required><br>
+        <input type="file" id="fileUpload" accept=".pdf,.doc,.docx" required><br>
+        <button type="submit">Subir Archivo</button>
+      </form>
+
+      <!-- FORMULARIO MANUAL -->
+      <!-- NUEVO FORMULARIO EDITABLE -->
+      <form id="manualForm" style="display: none; margin-top: 20px;">
+        <input type="text" id="titleManual" placeholder="Título" required style="margin-bottom: 10px;"><br>
+        <div id="editorContainer" style="height: 300px; background: white; margin-bottom: 10px;"></div>
+        <button type="submit">Guardar Documento</button>
+      </form>
+
+
+      <table id="documentsTable" style="display: none;">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Última Modificación</th>
+            <th>Estado</th>
+            <th>Opciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <!-- Tabla para revisión -->
+      <h2 id="reviewTitle" style="display: none; margin-top: 40px;">Documentos pendientes para revisión</h2>
+      <table id="reviewTable" style="display: none; margin-top: 10px;">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Fecha</th>
+            <th>Descripción</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+              <!-- SECCIÓN ADMINISTRAR USUARIOS -->
+    <h2 id="userAdminTitle" style="display: none;">Administración de Usuarios</h2>
+
+
+      <div id="userAdminSection" style="display: none; margin-top: 20px;">
+        <form id="newUserForm" style="margin-bottom: 20px;">
+          <input type="text" id="newUserName" placeholder="Nombre" required>
+          <input type="email" id="newUserEmail" placeholder="Correo" required>
+          <input type="password" id="newUserPassword" placeholder="Contraseña" required>
+          <select id="newUserRole">
+            <option value="funcionario">Funcionario</option>
+            <option value="contratista">Contratista</option>
+            <option value="auditor">Auditor</option>
+          </select>
+          <button type="submit">Crear Usuario</button>
+        </form>
+
+        <table id="usersTable">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  
+  <script src="script.js"></script>
+</body>
+</html>
