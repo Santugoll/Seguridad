@@ -33,14 +33,28 @@ const authRoutes = require('./routes/authRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 
 const app = express();
+app.disable('x-powered-by');
 
 // Conectar base de datos
 connectDB();
 
 // Middlewares
-app.use(cors());
+const corsOptions = {
+  origin: 'http://localhost:5000',
+  credentials: true
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'frontend')));
+
+// Middleware para Content Security Policy
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' https://cdn.quilljs.com; style-src 'self' https://cdn.quilljs.com; img-src 'self'; connect-src 'self'; font-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests; block-all-mixed-content;"
+  );
+  next();
+});
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
