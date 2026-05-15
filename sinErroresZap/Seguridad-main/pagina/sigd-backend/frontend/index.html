@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>SIGD</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="/vendor/quill/quill.snow.css" rel="stylesheet">
+  <script src="/vendor/quill/quill.min.js"></script>
+</head>
+<body>
+
+  <!-- ===== LOGIN ===== -->
+  <div id="loginSection" class="miElemento">
+
+    <div class="columnaIzquierda">
+      <div class="contenedorColumna">
+        <img src="alcali.jpg" alt="Logo Alcaldía" class="logoAlcaldia">
+        <img src="puco.png" alt="Logo Puro Corazón por Cali" class="logoPuroCorazon">
+      </div>
+    </div>
+
+    <div class="columnaDerecha flexColumnaCentro">
+      <img src="otrosig.jpg" alt="SIGD" class="logoSigd">
+
+      <form id="loginForm" class="loginForm">
+        <div class="inputGrupo">
+          <input type="email" id="email" placeholder="Usuario" required class="inputCampo">
+          <span class="iconoInput">👤</span>
+        </div>
+        <div class="inputGrupo">
+          <input type="password" id="password" placeholder="Contraseña" required class="inputCampo">
+          <span class="iconoInput">🔒</span>
+        </div>
+        <a href="#" class="linkRecuperar">¿Olvidó su contraseña o usuario?</a>
+        <button type="submit" class="btnLogin">Iniciar Sesión</button>
+      </form>
+
+      <div class="infoLogin">
+        <div class="infoTexto">Funcionarios, proveedores y supervisores acceden al sistema con credenciales seguras</div>
+        <div class="infoTexto">En caso de pérdida de contraseña o usuario, se realiza la recuperación o cambio a través de e-mail</div>
+      </div>
+    </div>
+
+  </div><!-- FIN loginSection -->
+
+
+  <!-- ===== APP PRINCIPAL ===== -->
+  <div id="mainSection" class="hidden full-width flex">
+
+    <div id="sidebar">
+      <img src="sgiddos.jpg" width="200" height="200">
+      <h3>Menú</h3>
+      <div class="dropdownContainer">
+        <button id="uploadBtn">Cargar Documento</button>
+        <div id="uploadDropdown">
+          <!-- IDs añadidos; los onclick se mueven a script.js -->
+          <button id="btnSubirArchivo">📄 Subir archivo PDF/Word</button>
+          <button id="btnCrearManual">✏️ Crear manualmente</button>
+        </div>
+      </div>
+      <button id="btnVerDocumentos">Ver todos los documentos</button>
+      <button id="btnReview">Revisión y Aprobación</button>
+      <button id="btnAudit">Auditoría</button>
+      <button id="btnGenerarReporte">Generar Reporte PDF</button>
+      <button id="btnUserAdmin" class="btnOculto">Administrar Usuarios</button>
+    </div>
+
+    <div id="main">
+      <div class="topBar">
+        <input type="text" id="searchInput" placeholder="Búsqueda avanzada en SIGD" class="searchInputStyle">
+        <button id="btnCerrarSesion">Cerrar sesión</button>
+      </div>
+
+      <h2>Te damos la bienvenida a SIGD</h2>
+
+      <div id="aboutSection" class="aboutSectionStyle">
+        <p>SIGD (Sistema Integrado de Gestión Documental) es una plataforma diseñada para permitir a funcionarios, proveedores y supervisores:</p>
+        <ul>
+          <li>📤 Subir y gestionar documentos institucionales</li>
+          <li>✅ Aprobar o rechazar documentos según roles</li>
+          <li>📁 Almacenar archivos en un entorno seguro y centralizado</li>
+          <li>🔍 Buscar información relevante rápidamente</li>
+        </ul>
+        <p class="aboutTextMargin">Seleccione una opción del menú lateral para comenzar.</p>
+      </div>
+
+      <h2 id="auditTitle" class="hiddenDisplay">Registro de Auditoría</h2>
+      <table id="auditTable" class="hiddenDisplay">
+        <thead><tr><th>Título</th><th>Creado por</th><th>Fecha</th><th>Estado</th><th>Revisado por</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <div id="documentViewer" class="hidden p-20">
+        <!-- Sin onclick inline; listeners en script.js -->
+        <button id="btnCerrarViewer" class="btnCerrarViewer">Cerrar</button>
+        <h2 id="viewerTitle"></h2>
+        <div id="viewerContent" class="viewerContentStyle"></div>
+        <div id="editorView" class="editorViewStyle">
+          <div id="editorArea" class="editorAreaStyle"></div>
+          <button id="btnGuardarCambios" class="btn-green mt-10">Guardar cambios</button>
+        </div>
+        <button id="editBtn" class="btn-blue mt-20">Editar</button>
+      </div>
+
+      <form id="fileForm" enctype="multipart/form-data" class="formHidden">
+        <input type="text" id="titleFile" placeholder="Título" required><br>
+        <input type="file" id="fileUpload" accept=".pdf,.doc,.docx" required><br>
+        <button type="submit">Subir Archivo</button>
+      </form>
+
+      <form id="manualForm" class="formHidden">
+        <input type="text" id="titleManual" placeholder="Título" required class="inputMarginBottom"><br>
+        <div id="editorContainer" class="editorContainerStyle"></div>
+        <button type="submit">Guardar Documento</button>
+      </form>
+
+      <table id="documentsTable" class="hiddenDisplay">
+        <thead><tr><th>Nombre</th><th>Última Modificación</th><th>Estado</th><th>Opciones</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <h2 id="reviewTitle" class="hiddenDisplay marginTop40">Documentos pendientes para revisión</h2>
+      <table id="reviewTable" class="hiddenDisplay marginTop10">
+        <thead><tr><th>Nombre</th><th>Fecha</th><th>Descripción</th><th>Acciones</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <h2 id="userAdminTitle" class="hiddenDisplay">Administración de Usuarios</h2>
+      <div id="userAdminSection" class="hiddenDisplay marginTop20">
+        <form id="newUserForm" class="marginBottom20">
+          <input type="text" id="newUserName" placeholder="Nombre" required>
+          <input type="email" id="newUserEmail" placeholder="Correo" required>
+          <input type="password" id="newUserPassword" placeholder="Contraseña" required>
+          <select id="newUserRole">
+            <option value="funcionario">Funcionario</option>
+            <option value="contratista">Contratista</option>
+            <option value="auditor">Auditor</option>
+          </select>
+          <button type="submit">Crear Usuario</button>
+        </form>
+        <table id="usersTable">
+          <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acción</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </div><!-- FIN #main -->
+
+  </div><!-- FIN #mainSection -->
+
+  <script src="script.js"></script>
+</body>
+</html>
